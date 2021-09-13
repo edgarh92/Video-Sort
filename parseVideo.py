@@ -9,6 +9,21 @@ import json
 
 # ffprobe = os.path.join(os.path.dirname(sys.argv[0])  + '/ffprobe')
 ffprobe = "/usr/local/bin/ffprobe"
+
+def buildVideoList(sourceFile):
+    videoList = []
+    for files in sourceFile:
+        if os.path.isdir(files):
+            directoryFiles = sorted(os.listdir(files))
+            for file in directoryFiles:
+                if file.endswith(acceptedFormats):
+                    videoList.append(os.path.join(files, file))
+        elif os.path.isfile(files):
+            if files.endswith(acceptedFormats):
+                videoList.append(os.path.abspath(files))
+
+    return videoList
+
 def getVideoStreamDuration (videoObject):
     foundDuration = None
     streamDuration = None
@@ -33,33 +48,42 @@ def getVideoAspectRatio (videoObject):
             break
     return videoAspectRatio
 
-def sortByAspect (file ,videoAspectRatio):
+def getVideoOrientation (file ,videoAspectRatio):
     if videoAspectRatio == 0.5625:
         print( "Portrait")
     else:
         print("Landscape")
 
-def sortByDuration(file,videoDuration):
+def videoLengthIsValid(videoDuration):
     (h, m, s, ms) = videoDuration.split(':')
     print (h, m, s, ms)
     if int(s) < 10:
         print(s)
-        print("Less than 10 seconds")
+       return True
     else:
-        print("Longer than 10 seconds")
+        return False
 
 
-def parseVideoData(videoFileList):
-    for file in videoFileList:
+def parseVideoData(videoFile):
 
-        stdout, stderr=subprocess.Popen([ffprobe, "-sexagesimal", "-print_format", "json", "-show_entries", "stream=codec_type,codec_name,duration,sample_rate,bit_rate,width,height", file, "-sexagesimal"] , universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() 
-        videoMetaData = json.loads(stdout)
-        videoDuration = getVideoStreamDuration(videoMetaData)
-        videoAspectRatio = getVideoAspectRatio(videoMetaData)
-        sortByDuration(file,videoDuration)
-        sortByAspect(file,videoAspectRatio)
+    stdout, stderr=subprocess.Popen([ffprobe, "-sexagesimal", "-print_format", "json", "-show_entries", "stream=codec_type,codec_name,duration,sample_rate,bit_rate,width,height", file, "-sexagesimal"] , universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() 
+    videoMetaData = json.loads(stdout)
+    videoDuration = getVideoStreamDuration(videoMetaData)
+    videoAspectRatio = getVideoAspectRatio(videoMetaData)
+       
         
 
+def sortByAttributes(videoFile, videoMetaData)
+    videoDuration, videoAspect = videoMetaData
+
+    if videoLengthIsValid(videoDuration):
+        if getVideoOrientation(videoAspect) == "Portrait":
+            print("Move to Portrait")
+        elif getVideoOrientation(videoAspect) == "Landscape":
+            print("Move to Landscape")
+        else
+            print("Error: Orientation Cannot be determine")
+        
 
 
 
@@ -72,19 +96,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    fileList = []
-    for files in args.files:
-        if os.path.isdir(files):
-            directoryFiles = sorted(os.listdir(files))
-            for file in directoryFiles:
-                if file.endswith(acceptedFormats):
-                    fileList.append(os.path.join(files, file))
-        elif os.path.isfile(files):
-            if files.endswith(acceptedFormats):
-                fileList.append(os.path.abspath(files))
+    buildVideoList(args.files)
 
-    sourceFiles = sorted(fileList)
-    if not sourceFiles:
+    sortedVideoFileList = sorted(buildVideoList)
+    if not buildVideoList:
         print('No accepted files found. Drag files or folders or both.')
     else:
-        videoAttributes = parseVideoData(sourceFiles)
+        for videoFile in buildVideoList:
+            videoAttributes=(parseVideoData(videoFile))
+            sortByAttributes(videoFile,videoAttributes)
