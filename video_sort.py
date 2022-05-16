@@ -117,17 +117,17 @@ def build_video_list(source_file) -> list:
         if os.path.isdir(files):
             directoryFiles = sorted(os.listdir(files))
             for file in directoryFiles:
-                if file.endswith(acceptedFormats):
+                if file.lower().endswith(acceptedFormats):
                     video_list.append(os.path.join(files, file))
         elif os.path.isfile(files):
-            if files.endswith(acceptedFormats):
+            if files.lower().endswith(acceptedFormats):
                 video_list.append(os.path.abspath(files))
 
     return video_list
 
 
 
-acceptedFormats = ('.avi', '.mp4', '.mp3', '.mxf', '.mov', '.wav', '.aif')
+acceptedFormats = ('.avi', '.mp4', '.mxf', '.mov', '.webm', '.m4v', '.h264', '.mkv')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A program that generates metadata summaries and can extract audio from video files")
