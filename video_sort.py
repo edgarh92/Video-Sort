@@ -41,8 +41,12 @@ class VideoProcessor():
         return videoAspectRatio
 
     def parseVideoData(self) -> (tuple):
-        '''Returns JSON of video attributes requested from ffprobe'''
-        attributes_request = str("stream=codec_type,codec_name,duration,sample_rate,bit_rate,width,height")
+        '''Returns JSON of video attributes requested from ffprobe
+            video_dict >> duration
+            video_dict >> video_width
+        '''
+
+        attributes_request = "stream=codec_type,codec_name,duration,sample_rate,bit_rate,width,height"
         if which("ffprobe") is not None:
             stdout, stderr = subprocess.Popen(
                 [
@@ -140,5 +144,7 @@ if __name__ == "__main__":
     else:
         for videoFile in sortedVideoFileList:
             print(f'Processing: {videoFile}')
-            video_attributes = VideoProcessor(videoFile).parseVideoData()
+            videoObject = VideoProcessor(videoFile)
+            video_attributes = videoObject.parseVideoData()
+
             sortByAttributes(videoFile,video_attributes)
