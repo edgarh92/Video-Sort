@@ -40,6 +40,15 @@ class VideoProcessor():
                 break
         return videoAspectRatio
 
+    def get_rotation(self) -> int:
+        try:
+            rotation = int(self.video_object['streams'][0]
+            ['side_data_list'][0]
+            ['rotation'])
+            return rotation
+        except KeyError:
+            return None
+
     def parseVideoData(self) -> (tuple):
         '''Returns JSON of video attributes requested from ffprobe
             video_dict >> duration
@@ -146,5 +155,4 @@ if __name__ == "__main__":
             print(f'Processing: {videoFile}')
             videoObject = VideoProcessor(videoFile)
             video_attributes = videoObject.parseVideoData()
-
             sortByAttributes(videoFile,video_attributes)
